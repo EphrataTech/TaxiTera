@@ -17,6 +17,43 @@ export default function BookingForm() {
     SAMPLE_STATIONS,
   } = useBookingForm();
 
+  async function handleSubmit() {
+    const payload = {
+      user: "guest", // placeholder until auth is added
+      route: `${values.pickupStation} -> ${values.destinationStation}`,
+      type: values.taxiType,
+      date: values.date,
+      time: values.time,
+      seatsBooked: values.passengers,
+      passengerNames: [],
+    };
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/bookings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Failed to create booking");
+
+      // simple toast
+      if (typeof window !== 'undefined') {
+        const el = document.createElement('div');
+        el.textContent = 'Booking successful!';
+        el.className = 'fixed top-4 right-4 z-50 rounded-lg bg-primary px-4 py-2 text-white shadow-lg shadow-primary/30';
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 2500);
+      }
+    } catch (e) {
+      if (typeof window !== 'undefined') {
+        const el = document.createElement('div');
+        el.textContent = 'Failed to book. Please try again.';
+        el.className = 'fixed top-4 right-4 z-50 rounded-lg bg-red-600 px-4 py-2 text-white shadow-lg';
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 2500);
+      }
+    }
+  }
+
   return (
     <section id="book" className="w-full">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -121,6 +158,7 @@ export default function BookingForm() {
             <div className="lg:col-span-2 flex items-end">
               <button
                 type="button"
+                onClick={handleSubmit}
                 className="w-full inline-flex items-center justify-center rounded-xl bg-primary px-6 py-3 text-white shadow-lg shadow-primary/30 transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Book Now
