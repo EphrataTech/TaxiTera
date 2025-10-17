@@ -1,12 +1,16 @@
 "use client";
 
 import { useBookingForm } from "@/hooks/useBookingForm";
+import { api } from "@/lib/api";
+import { showToast } from "@/components/ui/Toast";
+import { useRouter } from "next/navigation";
 
 function Label({ children }: { children: React.ReactNode }) {
   return <label className="text-sm font-medium text-text/80">{children}</label>;
 }
 
 export default function BookingForm() {
+  const router = useRouter();
   const {
     values,
     update,
@@ -19,7 +23,6 @@ export default function BookingForm() {
 
   async function handleSubmit() {
     const payload = {
-      user: "guest", // placeholder until auth is added
       route: `${values.pickupStation} -> ${values.destinationStation}`,
       type: values.taxiType,
       date: values.date,
@@ -28,29 +31,15 @@ export default function BookingForm() {
       passengerNames: [],
     };
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/bookings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error("Failed to create booking");
-
-      // simple toast
-      if (typeof window !== 'undefined') {
-        const el = document.createElement('div');
-        el.textContent = 'Booking successful!';
-        el.className = 'fixed top-4 right-4 z-50 rounded-lg bg-primary px-4 py-2 text-white shadow-lg shadow-primary/30';
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 2500);
+      await api.post(`/bookings`, payload);
+      showToast('Booking successful!', 'success');
+    } catch (e: any) {
+      if (String(e?.message || '').includes('401')) {
+        showToast('Please sign in to book', 'error');
+        router.push('/login');
+        return;
       }
-    } catch (e) {
-      if (typeof window !== 'undefined') {
-        const el = document.createElement('div');
-        el.textContent = 'Failed to book. Please try again.';
-        el.className = 'fixed top-4 right-4 z-50 rounded-lg bg-red-600 px-4 py-2 text-white shadow-lg';
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 2500);
-      }
+      showToast('Failed to book. Please try again.', 'error');
     }
   }
 
