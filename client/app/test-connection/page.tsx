@@ -10,10 +10,10 @@ export default function TestConnection() {
   const testConnection = async () => {
     try {
       setStatus('Testing connection...');
-      const response = await api.get('/users');
+      const response = await api.get('/users') as any;
       setUsers(response);
       setStatus('✅ Connected successfully!');
-    } catch (error) {
+    } catch (error: any) {
       setStatus('❌ Connection failed: ' + error.message);
     }
   };
