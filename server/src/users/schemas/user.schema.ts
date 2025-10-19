@@ -15,7 +15,7 @@ export class User {
   phone?: string;
 
   @Prop({ required: true })
-  password: string; // bcrypt hash
+  password: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
