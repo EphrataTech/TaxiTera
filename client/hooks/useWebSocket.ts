@@ -10,7 +10,7 @@ export function useWebSocket() {
     if (user) {
       socketRef.current = io(process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001');
       
-      socketRef.current.emit('join-user', user.userId);
+      socketRef.current.emit('join-user', user.id);
 
       socketRef.current.on('booking-update', (booking) => {
         console.log('Booking updated:', booking);
