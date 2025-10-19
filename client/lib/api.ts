@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 interface ApiError extends Error {
   status?: number;
@@ -29,6 +29,9 @@ class ApiClient {
     };
 
     try {
+      console.log('Making request to:', url);
+      console.log('Config:', config);
+      console.log('Base URL:', this.baseURL);
       const response = await fetch(url, config);
       
       if (!response.ok) {
@@ -46,12 +49,23 @@ class ApiClient {
       // Handle wrapped responses from transform interceptor
       return data.data || data;
     } catch (error) {
+      console.error('API request failed:', error);
+      
+      // Handle network/connection errors
       if (error instanceof TypeError && error.message === 'Failed to fetch') {
-        throw new Error('Cannot connect to server. Please ensure the backend is running on port 3001.');
+        throw new Error('Cannot connect to server. Please ensure the backend is running on port 5000.');
       }
+      
+      // Handle CORS errors
+      if (error instanceof TypeError && error.message.includes('CORS')) {
+        throw new Error('CORS error: Server may not be configured properly.');
+      }
+      
+      // Re-throw API errors (from handleErrorResponse)
       if (error instanceof Error) {
         throw error;
       }
+      
       throw new Error('Network error occurred');
     }
   }
@@ -66,12 +80,19 @@ class ApiClient {
   private async handleErrorResponse(response: Response): Promise<never> {
     let errorData: any = {};
     
+    console.log('Error response status:', response.status);
+    console.log('Error response headers:', Object.fromEntries(response.headers.entries()));
+    
     try {
-      errorData = await response.json();
-    } catch {
-      // If response is not JSON, use status text
+      const text = await response.text();
+      console.log('Raw error response:', text);
+      errorData = text ? JSON.parse(text) : { message: response.statusText };
+    } catch (parseError) {
+      console.log('Failed to parse error response:', parseError);
       errorData = { message: response.statusText };
     }
+
+    console.log('Parsed error data:', errorData);
 
     const error: ApiError = new Error(
       errorData.message || `HTTP ${response.status}: ${response.statusText}`

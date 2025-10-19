@@ -9,9 +9,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: 'http://localhost:3000', // frontend URL
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'], // frontend URLs
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true,
   });
   app.use(cookieParser());
@@ -19,7 +19,10 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new TransformInterceptor());
 
-  await app.listen(process.env.PORT ?? 3001);
-  console.log(`🚀 Server running on http://localhost:${process.env.PORT ?? 3001}`);
+  const port = process.env.PORT ?? 5000;
+  await app.listen(port);
+  console.log(`🚀 Server running on http://localhost:${port}`);
+  console.log(`📋 Health check: http://localhost:${port}/health`);
+  console.log(`🔐 Auth test: http://localhost:${port}/auth/test`);
 }
 bootstrap();
