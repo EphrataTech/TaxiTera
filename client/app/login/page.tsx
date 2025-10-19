@@ -1,27 +1,44 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { setSession, isAuthenticated, hydrated } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    if (hydrated && isAuthenticated) {
+      router.replace('/dashboard');
+    }
+  }, [hydrated, isAuthenticated, router]);
+  
+  if (!hydrated) return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400"></div>
+    </div>
+  );
+  if (isAuthenticated) return <div>Redirecting...</div>;
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const res = await api.post("/auth/login", { email, password });
-      if (typeof window !== "undefined") {
-        localStorage.setItem("tt_access_token", res.accessToken);
-        localStorage.setItem("tt_user", JSON.stringify(res.user));
-        document.cookie = `tt_access_token=${res.accessToken}; Path=/; Max-Age=${7 * 24 * 3600}`;
-      }
+      const res = await api.login({ email, password }) as any;
+      console.log('Login response:', res);
+      const token = res.access_token || res.data?.access_token;
+      const user = res.user || res.data?.user;
+      console.log('Token:', token);
+      console.log('User:', user);
+      setSession(token, user);
+      console.log('Session set, redirecting to dashboard');
       router.replace("/dashboard");
     } catch (err: any) {
       setError(err?.message || "Login failed");
@@ -31,46 +48,62 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl ring-1 ring-black/5">
-        <h1 className="text-2xl font-bold text-text">Welcome back</h1>
-        <p className="mt-1 text-sm text-text/70">Sign in to your TaxiTera account</p>
+    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+      <div className="absolute inset-0 -z-10">
+        <img src="/addisababa.png" alt="Addis Ababa" className="h-full w-full object-cover opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/90" />
+      </div>
+      
+      <div className="w-full max-w-md bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-4 py-2 border border-white/20 shadow-lg mb-4">
+            <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
+            <span className="text-sm font-medium text-white">Welcome Back</span>
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-2">Sign In</h1>
+          <p className="text-white/70">Access your TaxiTera account</p>
+        </div>
 
-        <form onSubmit={handleLogin} className="mt-6 space-y-4">
+        <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="text-sm font-medium text-text/80">Email</label>
+            <label className="block text-sm font-medium text-white/80 mb-2">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-sm text-text shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
+              className="w-full p-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent backdrop-blur-sm"
+              placeholder="Enter your email"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-text/80">Password</label>
+            <label className="block text-sm font-medium text-white/80 mb-2">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="mt-1 w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-sm text-text shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
+              className="w-full p-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent backdrop-blur-sm"
+              placeholder="Enter your password"
             />
           </div>
           {error && (
-            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700 ring-1 ring-red-200">{error}</div>
+            <div className="rounded-2xl bg-red-500/20 border border-red-400/30 p-4 text-sm text-red-300">{error}</div>
           )}
           <button
             type="submit"
             disabled={loading}
-            className="w-full inline-flex items-center justify-center rounded-xl bg-primary px-6 py-3 text-white shadow-lg shadow-primary/30 transition hover:brightness-110 disabled:opacity-60"
+            className="w-full inline-flex items-center justify-center rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-8 py-4 text-lg font-semibold text-black shadow-2xl shadow-amber-500/40 transition-all hover:shadow-amber-500/60 hover:scale-105 disabled:opacity-60"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-text/70">
-          New here? <a className="text-primary hover:underline" href="/register">Create an account</a>
+        <p className="mt-6 text-center text-sm text-white/70">
+          New here?{" "}
+          <a className="text-amber-400 hover:text-amber-300 font-medium transition-colors" href="/register">
+            Create an account
+          </a>
         </p>
       </div>
     </div>
