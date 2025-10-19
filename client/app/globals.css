@@ -27,3 +27,7 @@ body {
     Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial,
     "Apple Color Emoji", "Segoe UI Emoji";
 }
+
+html {
+  scroll-behavior: smooth;
+}
