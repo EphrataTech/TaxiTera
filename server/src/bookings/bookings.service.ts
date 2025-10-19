@@ -3,14 +3,24 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Booking, BookingDocument } from './schemas/booking.schema';
 import { CreateBookingDto } from './dto/create-booking.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class BookingsService {
-  constructor(@InjectModel(Booking.name) private bookingModel: Model<BookingDocument>) {}
+  constructor(
+    @InjectModel(Booking.name) private bookingModel: Model<BookingDocument>,
+    private notificationsService: NotificationsService,
+  ) {}
 
-  async create(createDto: CreateBookingDto) {
+  async create(createDto: CreateBookingDto, userEmail?: string) {
     const created = new this.bookingModel(createDto);
-    return created.save();
+    const saved = await created.save();
+    
+    if (userEmail) {
+      await this.notificationsService.sendBookingConfirmation(userEmail, saved);
+    }
+    
+    return saved;
   }
 
   async findAll() {
