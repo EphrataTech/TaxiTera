@@ -46,7 +46,7 @@ export default function RegisterPage() {
       console.log('Registration response:', res);
       
       // Handle different response structures
-      const token = res.accessToken || res.data?.accessToken || res.data?.access_token || res.token;
+      const token = res.access_token || res.data?.access_token || res.accessToken || res.token;
       const user = res.user || res.data?.user || res.userData;
       
       console.log('Extracted token:', token);
