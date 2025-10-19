@@ -45,6 +45,7 @@ declare global {
   interface Window {
     google: any;
     initMap: () => void;
+    selectMapLocation: (name: string, lat: number, lng: number) => void;
   }
 }
 
@@ -68,7 +69,7 @@ export default function GoogleMap({ onLocationSelect, fromLocation, toLocation }
       }
 
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dO_BcqbJMmQ4Eo&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
       script.async = true;
       script.defer = true;
       script.onload = initializeMap;
