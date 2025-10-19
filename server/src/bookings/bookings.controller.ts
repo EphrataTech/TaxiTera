@@ -11,19 +11,14 @@ export class BookingsController {
   @Post()
   create(@Req() req: any, @Body() createDto: CreateBookingDto) {
     const userId = req.user.userId;
-    return this.bookingsService.create({ ...createDto, user: userId } as any);
+    const userEmail = req.user.email;
+    return this.bookingsService.create({ ...createDto, user: userId } as any, userEmail);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get()
   findAll() {
     return this.bookingsService.findAll();
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Get('user/:userId')
-  findByUser(@Param('userId') userId: string) {
-    return this.bookingsService.findByUser(userId);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -34,7 +29,7 @@ export class BookingsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post(':id/cancel')
-  cancel(@Param('id') id: string) {
+  cancel(@Param('id') id: string, @Body() body: { reason: string }) {
     return this.bookingsService.cancel(id);
   }
 }
