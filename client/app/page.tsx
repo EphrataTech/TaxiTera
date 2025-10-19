@@ -1,34 +1,45 @@
-import Hero from "@/components/Hero";
+"use client";
+
+import { useAuth } from "@/context/AuthContext";
+import HeroSection from "@/components/HeroSection";
+import ServicesSection from "@/components/ServicesSection";
+import AboutSection from "@/components/AboutSection";
+import HowItWorksSection from "@/components/HowItWorksSection";
+
+import FAQSection from "@/components/FAQSection";
 import BookingForm from "@/components/BookingForm";
+import Footer from "@/components/Footer";
 
-export default function Home() {
+export default function HomePage() {
+  const { isAuthenticated, hydrated } = useAuth();
+
+  if (!hydrated) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-[#EFF6FF]">
-      <header className="sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-white/60 bg-white/80 border-b border-black/5">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
-          <div className="text-lg font-extrabold tracking-tight">
-            <span className="text-text">Taxi</span>
-            <span className="text-primary">Tera</span>
+    <div className="min-h-screen">
+      <HeroSection />
+      
+      <AboutSection />
+      <HowItWorksSection />
+      <ServicesSection />
+
+      <FAQSection />
+      
+      {/* Booking Section - only show for authenticated users */}
+      {isAuthenticated && (
+        <section className="py-20 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              
+            </div>
+            <BookingForm />
           </div>
-          <nav className="hidden sm:flex items-center gap-6 text-sm text-text/70">
-            <a href="#book" className="hover:text-text">Book</a>
-            <a href="#learn" className="hover:text-text">How it works</a>
-          </nav>
-        </div>
-      </header>
-
-      <main className="py-6 sm:py-10">
-        <Hero />
-        <div className="mt-2">
-          <BookingForm />
-        </div>
-      </main>
-
-      <footer className="py-10">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center text-sm text-text/60">
-          © {new Date().getFullYear()} TaxiTera. All rights reserved.
-        </div>
-      </footer>
+        </section>
+      )}
+      
+      <Footer />
     </div>
   );
 }
