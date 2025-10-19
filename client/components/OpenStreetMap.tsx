@@ -71,7 +71,7 @@ export default function OpenStreetMap({ onLocationSelect, fromLocation, toLocati
       // Add markers for all destinations
       destinations.forEach((dest) => {
         const isFrom = dest.name === fromLocation;
-        const isTo = dest.name === toDestination;
+        const isTo = dest.name === toLocation;
         
         let iconColor = '#3b82f6'; // Default blue
         if (isFrom) iconColor = '#10b981'; // Green for origin
