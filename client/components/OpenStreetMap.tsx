@@ -56,61 +56,71 @@ export default function OpenStreetMap({ onLocationSelect, fromLocation, toLocati
       document.head.appendChild(link);
     }
 
-    // Dynamically import Leaflet
-    import('leaflet').then((L) => {
-      if (!mapRef.current || mapInstanceRef.current) return;
-
-      // Initialize map centered on Addis Ababa
-      const map = L.map(mapRef.current).setView([9.0320, 38.7469], 12);
-
-      // Add OpenStreetMap tiles
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
-
-      // Add markers for all destinations
-      destinations.forEach((dest) => {
-        const isFrom = dest.name === fromLocation;
-        const isTo = dest.name === toLocation;
+    // Load Leaflet dynamically
+    const loadLeaflet = async () => {
+      if (typeof window === 'undefined') return;
+      
+      try {
+        const L = await import('leaflet');
         
-        let iconColor = '#3b82f6'; // Default blue
-        if (isFrom) iconColor = '#10b981'; // Green for origin
-        if (isTo) iconColor = '#f59e0b'; // Amber for destination
+        if (!mapRef.current || mapInstanceRef.current) return;
 
-        const marker = L.circleMarker([dest.lat, dest.lng], {
-          radius: 8,
-          fillColor: iconColor,
-          color: '#ffffff',
-          weight: 2,
-          opacity: 1,
-          fillOpacity: 0.8
+        // Initialize map centered on Addis Ababa
+        const map = L.map(mapRef.current).setView([9.0320, 38.7469], 12);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        marker.bindPopup(`
-          <div style="text-align: center; padding: 8px; min-width: 120px;">
-            <h3 style="margin: 0 0 8px 0; color: #1f2937; font-size: 14px; font-weight: 600;">${dest.name}</h3>
-            <button 
-              onclick="window.selectOSMLocation('${dest.name}', ${dest.lat}, ${dest.lng})"
-              style="
-                background: linear-gradient(to right, #fbbf24, #f59e0b);
-                color: black;
-                border: none;
-                padding: 6px 12px;
-                border-radius: 16px;
-                font-size: 12px;
-                font-weight: 600;
-                cursor: pointer;
-                width: 100%;
-              "
-            >
-              Select Location
-            </button>
-          </div>
-        `);
-      });
+        // Add markers for all destinations
+        destinations.forEach((dest) => {
+          const isFrom = dest.name === fromLocation;
+          const isTo = dest.name === toLocation;
+          
+          let iconColor = '#3b82f6'; // Default blue
+          if (isFrom) iconColor = '#10b981'; // Green for origin
+          if (isTo) iconColor = '#f59e0b'; // Amber for destination
 
-      mapInstanceRef.current = map;
-    });
+          const marker = L.circleMarker([dest.lat, dest.lng], {
+            radius: 8,
+            fillColor: iconColor,
+            color: '#ffffff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+          }).addTo(map);
+
+          marker.bindPopup(`
+            <div style="text-align: center; padding: 8px; min-width: 120px;">
+              <h3 style="margin: 0 0 8px 0; color: #1f2937; font-size: 14px; font-weight: 600;">${dest.name}</h3>
+              <button 
+                onclick="window.selectOSMLocation('${dest.name}', ${dest.lat}, ${dest.lng})"
+                style="
+                  background: linear-gradient(to right, #fbbf24, #f59e0b);
+                  color: black;
+                  border: none;
+                  padding: 6px 12px;
+                  border-radius: 16px;
+                  font-size: 12px;
+                  font-weight: 600;
+                  cursor: pointer;
+                  width: 100%;
+                "
+              >
+                Select Location
+              </button>
+            </div>
+          `);
+        });
+
+        mapInstanceRef.current = map;
+      } catch (error) {
+        console.error('Failed to load Leaflet:', error);
+      }
+    };
+    
+    loadLeaflet();
 
     // Global function for popup buttons
     (window as any).selectOSMLocation = (name: string, lat: number, lng: number) => {
