@@ -99,9 +99,9 @@ export default function BookPage() {
                            selectedPricingTier === 'business' ? 1.6 : 1.0;
       
       setPricing({
-        ...result,
-        pricePerPerson: Math.round(result.pricePerPerson * tierMultiplier),
-        totalPrice: Math.round(result.totalPrice * tierMultiplier),
+        pricePerPerson: Math.round((result?.pricePerPerson || 0) * tierMultiplier),
+        totalPrice: Math.round((result?.totalPrice || 0) * tierMultiplier),
+        passengers: result?.passengers || selectedSeats.length,
         tier: selectedPricingTier
       });
     } catch (error) {
