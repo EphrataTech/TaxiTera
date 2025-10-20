@@ -1,26 +1,54 @@
-import { Body, Controller, Post, Get, Req, Res, UseGuards, Logger } from '@nestjs/common';
+import { Body, Controller, Post, Get, Req, Res, UseGuards, Logger, UsePipes, ValidationPipe, Query, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
+import { RegisterDto, LoginDto } from './dto/auth.dto';
+import { EmailVerificationService } from './email-verification.service';
 import type { Request, Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
   
-  constructor(private auth: AuthService) {
+  constructor(
+    private auth: AuthService,
+    private emailVerification: EmailVerificationService
+  ) {
     this.logger.log('AuthController initialized');
   }
 
   @Post('register')
-  register(@Body() body: { name: string; email: string; password: string; phone?: string }) {
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  register(@Body() registerDto: RegisterDto) {
     this.logger.log('Register endpoint called');
-    return this.auth.register(body);
+    return this.auth.register(registerDto);
   }
 
   @Post('login')
-  login(@Body() body: { email: string; password: string }) {
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  login(@Body() loginDto: LoginDto) {
     this.logger.log('Login endpoint called');
-    return this.auth.login(body);
+    return this.auth.login(loginDto);
+  }
+
+  @Get('verify-email')
+  async verifyEmail(@Query('token') token: string) {
+    this.logger.log('Email verification endpoint called');
+    if (!token) {
+      throw new BadRequestException('Verification token is required');
+    }
+    return this.emailVerification.verifyEmail(token);
+  }
+
+  @Post('forgot-password')
+  forgotPassword(@Body() body: { email: string }) {
+    this.logger.log('Forgot password endpoint called');
+    return this.auth.forgotPassword(body.email);
+  }
+
+  @Post('reset-password')
+  resetPassword(@Body() body: { token: string; newPassword: string }) {
+    this.logger.log('Reset password endpoint called');
+    return this.auth.resetPassword(body.token, body.newPassword);
   }
 
   @Get('test')
