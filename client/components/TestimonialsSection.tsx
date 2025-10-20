@@ -1,67 +1,80 @@
-"use client";
+"use client"
 
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"
+import { Star } from "lucide-react"
 
-export default function TestimonialsSection() {
+export default function Testimonials() {
   const testimonials = [
     {
+      name: "Mahder Hawaz",
+      role: "Daily Commuter",
+      content:
+        "TaxiTera has made my daily commute so much easier. The drivers are professional and the app is intuitive.",
       rating: 5,
-      quote: "TaxiTera has made my daily commute so much easier. The drivers are professional and the app is incredibly user-friendly.",
-      name: "Abebe K.",
-      role: "Frequent Rider"
+      image: "mahder.png",
     },
     {
+      name: "Robel Alemayehu",
+      role: "Business Owner",
+      content: "I use TaxiTera for all my business travels. The reliability and transparency are unmatched.",
       rating: 5,
-      quote: "I use TaxiTera for all my business trips. Reliable, clean vehicles, and always on time. Highly recommended!",
-      name: "Fatuma A.",
-      role: "Business Traveler"
+      image: "robel.png",
     },
     {
+      name: "Yohannes Assefa",
+      role: "Student",
+      content: "Affordable, safe, and always on time. TaxiTera is my go-to choice for getting around the city.",
       rating: 5,
-      quote: "As a student, I appreciate the affordable rates and the safety features. TaxiTera gives me peace of mind.",
-      name: "Yosef T.",
-      role: "Student"
-    }
-  ];
+      image: "avatar.png",
+    },
+  ]
 
   return (
-    <section id="testimonials" className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <p className="text-blue-600 font-semibold text-sm uppercase tracking-wide mb-4">TESTIMONIALS</p>
-          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">What Our Riders Are Saying</h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            We're proud to have earned the trust of our community. Here's what some of our happy customers have to say about their TaxiTera experience.
+    <section id="testimonials" className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-8 bg-background">
+      <div className="mx-auto max-w-6xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-4xl sm:text-5xl font-bold text-foreground mb-4 text-balance">
+            What Our{" "}
+            <span className="bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+              Riders Say
+            </span>
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Join thousands of satisfied customers who trust TaxiTera for their daily transportation needs.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-white rounded-2xl p-8 shadow-lg"
+              viewport={{ once: true }}
+              className="relative p-8 rounded-2xl bg-card border border-border hover:border-amber-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-amber-400/10"
             >
-              <div className="flex mb-4">
+              <div className="flex gap-1 mb-4">
                 {[...Array(testimonial.rating)].map((_, i) => (
-                  <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
+                  <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
                 ))}
               </div>
-              <p className="text-gray-600 mb-6 italic">"{testimonial.quote}"</p>
-              <div className="flex items-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                  <span className="text-blue-600 font-semibold text-lg">
-                    {testimonial.name.charAt(0)}
-                  </span>
-                </div>
+              <p className="text-card-foreground mb-6 leading-relaxed">{testimonial.content}</p>
+              <div className="flex items-center gap-4">
+                <img
+                  src={testimonial.image || "/placeholder.svg"}
+                  alt={testimonial.name}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
                 <div>
-                  <p className="font-semibold text-gray-900">{testimonial.name}</p>
-                  <p className="text-sm text-gray-500">{testimonial.role}</p>
+                  <p className="font-semibold text-card-foreground">{testimonial.name}</p>
+                  <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                 </div>
               </div>
             </motion.div>
@@ -69,5 +82,5 @@ export default function TestimonialsSection() {
         </div>
       </div>
     </section>
-  );
+  )
 }

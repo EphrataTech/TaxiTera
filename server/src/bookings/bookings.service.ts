@@ -37,4 +37,15 @@ export class BookingsService {
     b.status = 'cancelled';
     return b.save();
   }
+
+  async update(id: string, updateData: { date: string; time: string; additionalFee: number }) {
+    const booking = await this.bookingModel.findById(id);
+    if (!booking) throw new NotFoundException('Booking not found');
+    
+    booking.date = updateData.date;
+    booking.time = updateData.time;
+    booking.price = booking.price + updateData.additionalFee;
+    
+    return booking.save();
+  }
 }

@@ -5,7 +5,8 @@ import HeroSection from "@/components/HeroSection";
 import ServicesSection from "@/components/ServicesSection";
 import AboutSection from "@/components/AboutSection";
 import HowItWorksSection from "@/components/HowItWorksSection";
-
+import TestimonialsSection from "@/components/TestimonialsSection";
+import Pricing from "@/components/Pricing";
 import FAQSection from "@/components/FAQSection";
 import BookingForm from "@/components/BookingForm";
 import Footer from "@/components/Footer";
@@ -24,7 +25,8 @@ export default function HomePage() {
       <AboutSection />
       <HowItWorksSection />
       <ServicesSection />
-
+      <Pricing />
+      <TestimonialsSection />
       <FAQSection />
       
       {/* Booking Section - only show for authenticated users */}

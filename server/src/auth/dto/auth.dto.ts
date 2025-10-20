@@ -1,31 +1,39 @@
-import { IsEmail, IsString, MinLength, MaxLength, IsOptional, Matches } from 'class-validator';
+import { IsEmail, IsString, MinLength, MaxLength, IsOptional, Matches, IsNotEmpty } from 'class-validator';
 
 export class RegisterDto {
   @IsString()
-  @MinLength(2)
-  @MaxLength(50)
+  @IsNotEmpty()
+  @MinLength(2, { message: 'Name must be at least 2 characters' })
+  @MaxLength(50, { message: 'Name cannot exceed 50 characters' })
+  @Matches(/^[a-zA-Z\s]+$/, { message: 'Name can only contain letters and spaces' })
   name: string;
 
-  @IsEmail()
+  @IsEmail({}, { message: 'Please provide a valid email address' })
+  @MaxLength(100, { message: 'Email cannot exceed 100 characters' })
   email: string;
 
   @IsString()
-  @MinLength(6)
-  @MaxLength(100)
+  @MinLength(8, { message: 'Password must be at least 8 characters' })
+  @MaxLength(128, { message: 'Password cannot exceed 128 characters' })
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
+    message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+  })
   password: string;
 
   @IsOptional()
   @IsString()
-  @Matches(/^\+?[1-9]\d{1,14}$/, { message: 'Invalid phone number format' })
+  @Matches(/^\+251[79]\d{8}$/, { message: 'Phone number must be a valid Ethiopian number (+251XXXXXXXXX)' })
   phone?: string;
 }
 
 export class LoginDto {
-  @IsEmail()
+  @IsEmail({}, { message: 'Please provide a valid email address' })
+  @IsNotEmpty({ message: 'Email is required' })
   email: string;
 
-  @IsString()
-  @MinLength(1)
+  @IsString({ message: 'Password must be a string' })
+  @IsNotEmpty({ message: 'Password is required' })
+  @MinLength(1, { message: 'Password cannot be empty' })
   password: string;
 }
 

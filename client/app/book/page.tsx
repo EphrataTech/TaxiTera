@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { api } from "@/lib/api";
 import { motion } from "framer-motion";
 import { MapPin, Clock, Users, ArrowRight } from "lucide-react";
 import dynamic from 'next/dynamic';
@@ -41,6 +42,14 @@ export default function BookPage() {
   const [fromDestination, setFromDestination] = useState("");
   const [toDestination, setToDestination] = useState("");
   const [showMap, setShowMap] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState("");
+  const [selectedPricingTier, setSelectedPricingTier] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
+  const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
+  const [passengerNames, setPassengerNames] = useState<string[]>([]);
+  const [pricing, setPricing] = useState<any>(null);
+  const [loadingPrice, setLoadingPrice] = useState(false);
 
   // Pre-fill form with quick booking data from landing page
   useEffect(() => {
@@ -52,6 +61,7 @@ export default function BookPage() {
           setFromDestination(data.pickupStation || "");
           setToDestination(data.destinationStation || "");
           setSelectedVehicle(data.taxiType || "");
+          setSelectedPricingTier(data.pricingTier || "");
           setSelectedDate(data.date || "");
           setSelectedTime(data.time || "");
           // Clear the stored data after using it
@@ -62,17 +72,55 @@ export default function BookPage() {
       }
     }
   }, []);
-  const [selectedVehicle, setSelectedVehicle] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
-  const [selectedTime, setSelectedTime] = useState("");
-  const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
-  const [passengerNames, setPassengerNames] = useState<string[]>([]);
 
   useEffect(() => {
     if (hydrated && !isAuthenticated) {
       router.replace("/login");
     }
   }, [hydrated, isAuthenticated, router]);
+
+  // Real-time pricing calculation
+  useEffect(() => {
+    if (fromDestination && toDestination && selectedVehicle && selectedPricingTier && selectedSeats.length > 0) {
+      calculateRealTimePrice();
+    } else {
+      setPricing(null);
+    }
+  }, [fromDestination, toDestination, selectedVehicle, selectedPricingTier, selectedSeats.length]);
+
+  const calculateRealTimePrice = async () => {
+    setLoadingPrice(true);
+    try {
+      const result = await api.calculatePrice(fromDestination, toDestination, selectedVehicle, selectedSeats.length);
+      
+      // Apply pricing tier multiplier
+      const tierMultiplier = selectedPricingTier === 'economy' ? 1.0 : 
+                           selectedPricingTier === 'premium' ? 1.3 : 
+                           selectedPricingTier === 'business' ? 1.6 : 1.0;
+      
+      setPricing({
+        ...result,
+        pricePerPerson: Math.round(result.pricePerPerson * tierMultiplier),
+        totalPrice: Math.round(result.totalPrice * tierMultiplier),
+        tier: selectedPricingTier
+      });
+    } catch (error) {
+      console.error('Failed to calculate price:', error);
+      const fallbackPrice = calculatePrice(fromDestination, toDestination);
+      const tierMultiplier = selectedPricingTier === 'economy' ? 1.0 : 
+                           selectedPricingTier === 'premium' ? 1.3 : 
+                           selectedPricingTier === 'business' ? 1.6 : 1.0;
+      
+      setPricing({
+        pricePerPerson: Math.round(fallbackPrice * tierMultiplier),
+        totalPrice: Math.round(fallbackPrice * selectedSeats.length * tierMultiplier),
+        passengers: selectedSeats.length,
+        tier: selectedPricingTier
+      });
+    } finally {
+      setLoadingPrice(false);
+    }
+  };
 
   if (!hydrated) {
     return (
@@ -108,8 +156,8 @@ export default function BookPage() {
   }
 
   const vehicle = vehicleTypes.find(v => v.id === selectedVehicle);
-  const routePrice = fromDestination && toDestination ? calculatePrice(fromDestination, toDestination) : 0;
-  const totalPrice = routePrice && vehicle ? routePrice * vehicle.price * selectedSeats.length : 0;
+  const routePrice = pricing?.pricePerPerson || 0;
+  const totalPrice = pricing?.totalPrice || 0;
   const routeName = fromDestination && toDestination ? `${fromDestination} → ${toDestination}` : "";
 
   const handleSeatClick = (seatNumber: number) => {
@@ -129,8 +177,8 @@ export default function BookPage() {
   };
 
   const handleProceedToPayment = () => {
-    if (!fromDestination || !toDestination || !selectedVehicle || !selectedDate || !selectedTime || selectedSeats.length === 0) {
-      alert("Please fill all fields and select at least one seat");
+    if (!fromDestination || !toDestination || !selectedVehicle || !selectedPricingTier || !selectedDate || !selectedTime || selectedSeats.length === 0) {
+      alert("Please fill all fields, select pricing tier, and select at least one seat");
       return;
     }
 
@@ -142,6 +190,7 @@ export default function BookPage() {
     const bookingData = {
       route: routeName,
       vehicleType: selectedVehicle,
+      pricingTier: selectedPricingTier,
       date: selectedDate,
       time: selectedTime,
       seats: selectedSeats,
@@ -214,7 +263,7 @@ export default function BookPage() {
             </p>
           </motion.div>
           
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             {/* Booking Form */}
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
@@ -230,7 +279,7 @@ export default function BookPage() {
               </div>
               
               <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-3 text-white/80 flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-amber-400" />
@@ -326,7 +375,9 @@ export default function BookPage() {
                               <span className="w-3 h-3 bg-green-400 rounded-full"></span>
                               {toDestination}
                             </p>
-                            <p className="text-green-300 text-sm mt-1">💰 Estimated price: ${routePrice}</p>
+                            <p className="text-green-300 text-sm mt-1">
+                              💰 Route selected
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -335,35 +386,62 @@ export default function BookPage() {
                 )}
 
 
-                <div>
-                  <label className="block text-sm font-medium mb-3 text-white/80 flex items-center gap-2">
-                    <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
-                    </svg>
-                    Vehicle Type
-                  </label>
-                  <div className="relative">
-                    <select 
-                      value={selectedVehicle} 
-                      onChange={(e) => setSelectedVehicle(e.target.value)}
-                      className="w-full p-4 bg-gradient-to-r from-white/10 to-white/5 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent backdrop-blur-sm hover:border-amber-400/50 transition-all appearance-none cursor-pointer"
-                    >
-                      <option value="" className="bg-gray-800 text-white">🚌 Select Vehicle Type</option>
-                      {vehicleTypes.map(vehicle => (
-                        <option key={vehicle.id} value={vehicle.id} className="bg-gray-800 text-white">
-                          🚐 {vehicle.name} ({vehicle.seats} seats)
-                        </option>
-                      ))}
-                    </select>
-                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                      <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-3 text-white/80 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
                       </svg>
+                      Vehicle Type
+                    </label>
+                    <div className="relative">
+                      <select 
+                        value={selectedVehicle} 
+                        onChange={(e) => setSelectedVehicle(e.target.value)}
+                        className="w-full p-4 bg-gradient-to-r from-white/10 to-white/5 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent backdrop-blur-sm hover:border-amber-400/50 transition-all appearance-none cursor-pointer"
+                      >
+                        <option value="" className="bg-gray-800 text-white">🚌 Select Vehicle Type</option>
+                        {vehicleTypes.map(vehicle => (
+                          <option key={vehicle.id} value={vehicle.id} className="bg-gray-800 text-white">
+                            🚐 {vehicle.name} ({vehicle.seats} seats)
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                        <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-3 text-white/80 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                      </svg>
+                      Pricing Tier
+                    </label>
+                    <div className="relative">
+                      <select 
+                        value={selectedPricingTier} 
+                        onChange={(e) => setSelectedPricingTier(e.target.value)}
+                        className="w-full p-4 bg-gradient-to-r from-white/10 to-white/5 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent backdrop-blur-sm hover:border-green-400/50 transition-all appearance-none cursor-pointer"
+                      >
+                        <option value="" className="bg-gray-800 text-white">💰 Select Pricing Tier</option>
+                        <option value="economy" className="bg-gray-800 text-white">💵 Economy - Standard Service</option>
+                        <option value="premium" className="bg-gray-800 text-white">⭐ Premium - Enhanced Comfort</option>
+                        <option value="business" className="bg-gray-800 text-white">💼 Business - Luxury Experience</option>
+                      </select>
+                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                        <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-3 text-white/80 flex items-center gap-2">
                       <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -488,12 +566,13 @@ export default function BookPage() {
               transition={{ delay: 0.4 }}
               className="mt-8 bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl"
             >
-              <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+              <div className="flex flex-col lg:flex-row items-center justify-between gap-4 lg:gap-6">
                 <div className="text-center lg:text-left">
                   <h3 className="text-2xl font-bold text-white mb-2">Booking Summary</h3>
                   <div className="text-white/70 space-y-1">
                     <p><span className="text-amber-400">Route:</span> {routeName}</p>
                     <p><span className="text-amber-400">Vehicle:</span> {vehicle?.name}</p>
+                    <p><span className="text-amber-400">Tier:</span> {selectedPricingTier?.charAt(0).toUpperCase() + selectedPricingTier?.slice(1)}</p>
                     <p><span className="text-amber-400">Date:</span> {selectedDate}</p>
                     <p><span className="text-amber-400">Time:</span> {selectedTime}</p>
                     <p><span className="text-amber-400">Seats:</span> {selectedSeats.join(", ")}</p>

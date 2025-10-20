@@ -306,6 +306,25 @@ class ApiClient {
     return this.request(`/bookings/popular-routes${query}`);
   }
 
+  // Pricing endpoints
+  async calculatePrice(from: string, to: string, vehicleType: string, passengers: number = 1) {
+    const query = new URLSearchParams();
+    query.append('from', from);
+    query.append('to', to);
+    query.append('vehicleType', vehicleType);
+    query.append('passengers', passengers.toString());
+    
+    return this.request(`/pricing/calculate?${query.toString()}`);
+  }
+
+  async getPricingRoutes() {
+    return this.request('/pricing/routes');
+  }
+
+  async getVehicleTypes() {
+    return this.request('/pricing/vehicles');
+  }
+
   // Generic methods for backward compatibility
   async get(endpoint: string) {
     return this.request(endpoint);

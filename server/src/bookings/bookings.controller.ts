@@ -32,4 +32,10 @@ export class BookingsController {
   cancel(@Param('id') id: string, @Body() body: { reason: string }) {
     return this.bookingsService.cancel(id);
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':id/update')
+  update(@Param('id') id: string, @Body() body: { date: string; time: string; additionalFee: number }) {
+    return this.bookingsService.update(id, body);
+  }
 }

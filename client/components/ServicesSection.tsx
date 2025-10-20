@@ -1,36 +1,34 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Star } from "lucide-react"
+import { Zap, Shield, DollarSign, Clock } from "lucide-react"
 
-export default function Testimonials() {
-  const testimonials = [
+export default function Services() {
+  const services = [
     {
-      name: "Mahder Hawaz",
-      role: "Daily Commuter",
-      content:
-        "TaxiTera has made my daily commute so much easier. The drivers are professional and the app is intuitive.",
-      rating: 5,
-      image: "mahder.png",
+      icon: Zap,
+      title: "Quick Pickup",
+      description: "Average pickup time of 2-5 minutes. We're always nearby when you need us.",
     },
     {
-      name: "Robel Alemayehu",
-      role: "Business Owner",
-      content: "I use TaxiTera for all my business travels. The reliability and transparency are unmatched.",
-      rating: 5,
-      image: "robel.png",
+      icon: Shield,
+      title: "Safe & Secure",
+      description: "All drivers are verified and insured. Your safety is our top priority.",
     },
     {
-      name: "Yohannes Assefa",
-      role: "Student",
-      content: "Affordable, safe, and always on time. TaxiTera is my go-to choice for getting around the city.",
-      rating: 5,
-      image: "avatar.png",
+      icon: DollarSign,
+      title: "Transparent Pricing",
+      description: "No hidden charges. Know your fare before you book.",
+    },
+    {
+      icon: Clock,
+      title: "24/7 Availability",
+      description: "Available round the clock. We're here whenever you need a ride.",
     },
   ]
 
   return (
-    <section id="testimonials" className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-8 bg-background">
+    <section id="services" className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-8 bg-background">
       <div className="mx-auto max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -40,45 +38,37 @@ export default function Testimonials() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl sm:text-5xl font-bold text-foreground mb-4 text-balance">
-            What Our{" "}
+            Our{" "}
             <span className="bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-              Riders Say
+              Services
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Join thousands of satisfied customers who trust TaxiTera for their daily transportation needs.
+            Experience premium ride-sharing with features designed for your comfort and convenience.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              className="relative p-8 rounded-2xl bg-card border border-border hover:border-amber-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-amber-400/10"
-            >
-              <div className="flex gap-1 mb-4">
-                {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
-                ))}
-              </div>
-              <p className="text-card-foreground mb-6 leading-relaxed">{testimonial.content}</p>
-              <div className="flex items-center gap-4">
-                <img
-                  src={testimonial.image || "/placeholder.svg"}
-                  alt={testimonial.name}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                <div>
-                  <p className="font-semibold text-card-foreground">{testimonial.name}</p>
-                  <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+        <div className="grid md:grid-cols-2 gap-8">
+          {services.map((service, index) => {
+            const Icon = service.icon
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="group relative p-8 rounded-2xl bg-card border border-border hover:border-amber-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-amber-400/10"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-400/5 to-orange-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative">
+                  <Icon className="w-12 h-12 text-amber-400 mb-4" />
+                  <h3 className="text-xl font-semibold text-card-foreground mb-2">{service.title}</h3>
+                  <p className="text-muted-foreground">{service.description}</p>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            )
+          })}
         </div>
       </div>
     </section>
