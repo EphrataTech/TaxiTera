@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'], // frontend URLs
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://taxi-tera-lilac.vercel.app'], // frontend URLs
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true,
