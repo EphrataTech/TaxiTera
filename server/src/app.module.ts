@@ -6,6 +6,7 @@ import { BookingsModule } from './bookings/bookings.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { FeedbackModule } from './feedback/feedback.module';
+import { PricingModule } from './pricing/pricing.module';
 import { SecurityMiddleware } from './common/security.middleware';
 import { BookingGateway } from './websocket/websocket.gateway';
 import { PaymentsService } from './payments/payments.service';
@@ -21,6 +22,7 @@ import { NotificationsService } from './notifications/notifications.service';
     UsersModule,
     AuthModule,
     FeedbackModule,
+    PricingModule,
   ],
   providers: [BookingGateway, PaymentsService, NotificationsService],
   controllers: [AppController, PaymentsController],
