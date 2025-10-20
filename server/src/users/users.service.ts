@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
@@ -6,62 +6,124 @@ import { User, UserDocument } from './schemas/user.schema';
 
 @Injectable()
 export class UsersService {
-  private readonly logger = new Logger(UsersService.name);
+
 
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async findByEmail(email: string) {
-    try {
-      return await this.userModel.findOne({ email }).exec();
-    } catch (error) {
-      this.logger.error(`Error finding user by email: ${error.message}`);
-      throw error;
-    }
+    return await this.userModel.findOne({ email: email.toLowerCase().trim() }).exec();
+  }
+
+  async findByPhone(phone: string) {
+    return await this.userModel.findOne({ phone: phone.trim() }).exec();
   }
 
   async findById(id: string) {
-    try {
-      const user = await this.userModel.findById(id).exec();
-      if (!user) throw new NotFoundException('User not found');
-      return user;
-    } catch (error) {
-      this.logger.error(`Error finding user by ID: ${error.message}`);
-      throw error;
-    }
+    const user = await this.userModel.findById(id).exec();
+    if (!user) throw new NotFoundException('User not found');
+    return user;
   }
 
   async createUser(name: string, email: string, password: string, phone?: string) {
-    try {
-      this.logger.log(`Creating user: ${email}`);
-      
-      const hash = await bcrypt.hash(password, 10);
-      const userData = { 
-        name: name.trim(), 
-        email: email.toLowerCase().trim(), 
-        password: hash 
-      };
-      
-      if (phone) {
-        userData['phone'] = phone.trim();
+    if (phone) {
+      const existingPhone = await this.findByPhone(phone);
+      if (existingPhone) {
+        throw new ConflictException('Phone number already in use');
       }
-      
+    }
+    
+    const hash = await bcrypt.hash(password, 12);
+    const userData = { 
+      name: name.trim(), 
+      email: email.toLowerCase().trim(), 
+      password: hash,
+      isEmailVerified: false,
+      isActive: true
+    };
+    
+    if (phone) {
+      userData['phone'] = phone.trim();
+    }
+    
+    try {
       const user = new this.userModel(userData);
-      const savedUser = await user.save();
-      
-      this.logger.log(`User created successfully: ${savedUser.id}`);
-      return savedUser;
+      return await user.save();
     } catch (error) {
-      this.logger.error(`Error creating user: ${error.message}`, error.stack);
+      if (error.code === 11000) {
+        const field = Object.keys(error.keyPattern)[0];
+        throw new ConflictException(`${field} already exists`);
+      }
       throw error;
     }
   }
 
   async validatePassword(user: UserDocument, password: string) {
-    try {
-      return await bcrypt.compare(password, user.password);
-    } catch (error) {
-      this.logger.error(`Error validating password: ${error.message}`);
-      throw error;
-    }
+    return await bcrypt.compare(password, user.password);
+  }
+
+  async findByVerificationToken(token: string) {
+    return await this.userModel.findOne({ emailVerificationToken: token }).exec();
+  }
+
+  async markEmailAsVerified(userId: string) {
+    return await this.userModel.findByIdAndUpdate(
+      userId,
+      { 
+        isEmailVerified: true, 
+        emailVerificationToken: undefined 
+      },
+      { new: true }
+    ).exec();
+  }
+
+  async setVerificationToken(userId: string, token: string) {
+    return await this.userModel.findByIdAndUpdate(
+      userId,
+      { emailVerificationToken: token },
+      { new: true }
+    ).exec();
+  }
+
+  async setResetToken(userId: string, token: string) {
+    return await this.userModel.findByIdAndUpdate(
+      userId,
+      { passwordResetToken: token, passwordResetExpires: new Date(Date.now() + 3600000) }, // 1 hour
+      { new: true }
+    ).exec();
+  }
+
+  async findByResetToken(token: string) {
+    return await this.userModel.findOne({ 
+      passwordResetToken: token,
+      passwordResetExpires: { $gt: new Date() }
+    }).exec();
+  }
+
+  async updatePassword(userId: string, newPassword: string) {
+    const hash = await bcrypt.hash(newPassword, 12);
+    return await this.userModel.findByIdAndUpdate(
+      userId,
+      { password: hash },
+      { new: true }
+    ).exec();
+  }
+
+  async clearResetToken(userId: string) {
+    return await this.userModel.findByIdAndUpdate(
+      userId,
+      { passwordResetToken: undefined, passwordResetExpires: undefined },
+      { new: true }
+    ).exec();
+  }
+
+  async updateProfile(userId: string, updateData: { name?: string; phone?: string; profilePicture?: string }) {
+    const user = await this.userModel.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true }
+    ).select('-password').exec();
+    
+    if (!user) throw new NotFoundException('User not found');
+    return { user, message: 'Profile updated successfully' };
   }
 }
