@@ -91,7 +91,7 @@ export default function BookPage() {
   const calculateRealTimePrice = async () => {
     setLoadingPrice(true);
     try {
-      const result = await api.calculatePrice(fromDestination, toDestination, selectedVehicle, selectedSeats.length);
+      const result = await api.calculatePrice(fromDestination, toDestination, selectedVehicle, selectedSeats.length) as any;
       
       // Apply pricing tier multiplier
       const tierMultiplier = selectedPricingTier === 'economy' ? 1.0 : 
