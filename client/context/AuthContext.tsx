@@ -2,13 +2,14 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-type User = { id: string; name: string; email: string } | null;
+type User = { id: string; name: string; email: string; phone?: string; profilePicture?: string } | null;
 
 type AuthContextValue = {
   user: User;
   token: string | null;
   setSession: (token: string, user: NonNullable<User>) => void;
   clearSession: () => void;
+  updateUser: (userData: Partial<NonNullable<User>>) => void;
   isAuthenticated: boolean;
   hydrated: boolean;
 };
@@ -53,14 +54,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const updateUser = useCallback((userData: Partial<NonNullable<User>>) => {
+    if (user) {
+      const updatedUser = { ...user, ...userData };
+      setUser(updatedUser);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('tt_user', JSON.stringify(updatedUser));
+      }
+    }
+  }, [user]);
+
   const value = useMemo<AuthContextValue>(() => ({
     user,
     token,
     setSession,
     clearSession,
+    updateUser,
     isAuthenticated: Boolean(user && token),
     hydrated,
-  }), [user, token, setSession, clearSession, hydrated]);
+  }), [user, token, setSession, clearSession, updateUser, hydrated]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
