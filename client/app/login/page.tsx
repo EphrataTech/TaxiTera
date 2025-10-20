@@ -41,7 +41,12 @@ export default function LoginPage() {
       console.log('Session set, redirecting to dashboard');
       router.replace("/dashboard");
     } catch (err: any) {
-      setError(err?.message || "Login failed");
+      const errorMessage = err?.message || "Login failed";
+      if (errorMessage.includes("verify your email")) {
+        setError("Please check your email and click the verification link before logging in.");
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -88,7 +93,14 @@ export default function LoginPage() {
             />
           </div>
           {error && (
-            <div className="rounded-2xl bg-red-500/20 border border-red-400/30 p-4 text-sm text-red-300">{error}</div>
+            <div className="rounded-2xl bg-red-500/20 border border-red-400/30 p-4 text-sm text-red-300">
+              {error}
+              {error.includes("Invalid credentials") && (
+                <div className="mt-2 text-xs text-red-200">
+                  Make sure your email and password are correct, and that you've verified your email.
+                </div>
+              )}
+            </div>
           )}
           <button
             type="submit"
@@ -99,12 +111,19 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-white/70">
-          New here?{" "}
-          <a className="text-amber-400 hover:text-amber-300 font-medium transition-colors" href="/register">
-            Create an account
-          </a>
-        </p>
+        <div className="mt-6 text-center text-sm text-white/70 space-y-2">
+          <p>
+            New here?{" "}
+            <a className="text-amber-400 hover:text-amber-300 font-medium transition-colors" href="/register">
+              Create an account
+            </a>
+          </p>
+          <p>
+            <a className="text-blue-400 hover:text-blue-300 font-medium transition-colors" href="/reset-password">
+              Forgot your password?
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
