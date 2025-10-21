@@ -32,13 +32,9 @@ export default function LoginPage() {
     setError(null);
     try {
       const res = await api.login({ email, password }) as any;
-      console.log('Login response:', res);
       const token = res.access_token || res.data?.access_token;
       const user = res.user || res.data?.user;
-      console.log('Token:', token);
-      console.log('User:', user);
       setSession(token, user);
-      console.log('Session set, redirecting to dashboard');
       router.replace("/dashboard");
     } catch (err: any) {
       const errorMessage = err?.message || "Login failed";

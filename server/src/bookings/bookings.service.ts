@@ -19,23 +19,18 @@ export class BookingsService {
     const saved = await created.save();
     
     if (userEmail) {
-      await this.notificationsService.sendBookingConfirmation(userEmail, saved);
-      
-      // Send payment confirmation email
-      try {
-        await this.emailService.sendPaymentConfirmationEmail(userEmail, {
-          route: saved.route,
-          date: saved.date,
-          time: saved.time,
-          vehicleType: saved.type,
-          seats: saved.seatsBooked,
-          passengerNames: saved.passengerNames,
-          totalPrice: saved.price,
-          bookingId: saved._id
-        });
-      } catch (error) {
-        console.error('Failed to send payment confirmation email:', error);
-      }
+      // Send notifications asynchronously (don't wait)
+      this.notificationsService.sendBookingConfirmation(userEmail, saved).catch(() => {});
+      this.emailService.sendPaymentConfirmationEmail(userEmail, {
+        route: saved.route,
+        date: saved.date,
+        time: saved.time,
+        vehicleType: saved.type,
+        seats: saved.seatsBooked,
+        passengerNames: saved.passengerNames,
+        totalPrice: saved.price,
+        bookingId: saved._id
+      }).catch(() => {});
     }
     
     return saved;
