@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { EmailVerificationService } from './email-verification.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -27,15 +28,8 @@ export class AuthService {
       const user = await this.users.createUser(dto.name, dto.email, dto.password, dto.phone);
       this.logger.log(`User created successfully: ${user.id}`);
       
-      // Generate and send email verification
-      const verificationToken = this.emailVerification.generateVerificationToken();
-      await this.users.setVerificationToken(user.id, verificationToken);
-      await this.emailVerification.sendVerificationEmail(dto.email, verificationToken);
-      
-      return {
-        message: 'Registration successful. Please check your email to verify your account.',
-        user: { id: user.id, name: user.name, email: user.email, isEmailVerified: false }
-      };
+      // Return token immediately for better UX
+      return this.issueToken(user.id, user.name, user.email);
     } catch (error) {
       this.logger.error(`Registration failed: ${error.message}`, error.stack);
       throw error;
@@ -43,41 +37,51 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    try {
-      this.logger.log(`Login attempt for email: ${dto.email}`);
-      
-      const user = await this.users.findByEmail(dto.email);
-      if (!user) {
-        this.logger.warn(`User not found: ${dto.email}`);
-        throw new UnauthorizedException('Invalid credentials');
-      }
-      
-      if (!user.isActive) {
-        this.logger.warn(`Inactive user login attempt: ${dto.email}`);
-        throw new UnauthorizedException('Account is deactivated');
-      }
-      
-      const ok = await this.users.validatePassword(user, dto.password);
-      if (!ok) {
-        this.logger.warn(`Invalid password for: ${dto.email}`);
-        throw new UnauthorizedException('Invalid credentials');
-      }
-      
-      if (!user.isEmailVerified && process.env.NODE_ENV === 'production') {
-        this.logger.warn(`Unverified email login attempt: ${dto.email}`);
-        throw new BadRequestException('Please verify your email before logging in');
-      }
-      
-      if (!user.isEmailVerified && process.env.NODE_ENV !== 'production') {
-        this.logger.warn(`Development mode: allowing unverified email login for ${dto.email}`);
-      }
-      
-      this.logger.log(`Login successful for: ${dto.email}`);
-      return this.issueToken(user.id, user.name, user.email);
-    } catch (error) {
-      this.logger.error(`Login failed: ${error.message}`);
-      throw error;
+    const user = await this.users.findByEmail(dto.email);
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
     }
+    
+    if (!user.isActive) {
+      throw new UnauthorizedException('Account is deactivated');
+    }
+    
+    const ok = await this.users.validatePassword(user, dto.password);
+    if (!ok) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    
+    return this.issueToken(user.id, user.name, user.email);
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.users.findByEmail(email);
+    if (!user) {
+      // Don't reveal if email exists
+      return { message: 'If email exists, reset link has been sent' };
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetExpires = new Date(Date.now() + 3600000); // 1 hour
+    
+    await this.users.setPasswordResetToken(user.id, resetToken, resetExpires);
+    
+    // Log reset link for development
+    this.logger.log(`Password reset link for ${email}: ${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`);
+    
+    return { message: 'If email exists, reset link has been sent' };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const user = await this.users.findByPasswordResetToken(token);
+    if (!user || !user.passwordResetExpires || user.passwordResetExpires < new Date()) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    await this.users.updatePassword(user.id, newPassword);
+    await this.users.clearPasswordResetToken(user.id);
+    
+    return { message: 'Password reset successful' };
   }
 
 

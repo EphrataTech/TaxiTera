@@ -57,11 +57,6 @@ export default function ResetPasswordPage() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Reset Password</h1>
           <p className="text-white/70">Enter your email to receive a reset link</p>
-          <div className="mt-4 p-3 bg-blue-500/20 border border-blue-400/30 rounded-xl">
-            <p className="text-blue-300 text-sm">
-              💡 Development Mode: Check server console for reset token
-            </p>
-          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
