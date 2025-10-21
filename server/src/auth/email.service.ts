@@ -13,13 +13,17 @@ export class EmailService {
       this.transporter = null;
     } else {
       this.transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
+        service: 'gmail',
+        host: 'smtp.gmail.com',
         port: 587,
         secure: false,
         auth: {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,
         },
+        connectionTimeout: 60000,
+        greetingTimeout: 30000,
+        socketTimeout: 60000,
       });
       this.logger.log('Email service initialized with SMTP configuration');
     }
@@ -73,7 +77,7 @@ export class EmailService {
     } catch (error) {
       this.logger.error(`Failed to send reset email to ${email}: ${error.message}`);
       this.logger.log(`[FALLBACK] Reset link: ${resetUrl}`);
-      throw error;
+      // Don't throw error - allow password reset to continue
     }
   }
 
