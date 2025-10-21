@@ -14,16 +14,13 @@ export class EmailService {
     } else {
       this.transporter = nodemailer.createTransport({
         service: 'gmail',
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false,
         auth: {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,
         },
-        connectionTimeout: 60000,
-        greetingTimeout: 30000,
-        socketTimeout: 60000,
+        tls: {
+          rejectUnauthorized: false
+        }
       });
       this.logger.log('Email service initialized with SMTP configuration');
     }
