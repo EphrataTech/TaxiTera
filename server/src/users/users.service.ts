@@ -119,38 +119,6 @@ export class UsersService {
     ).exec();
   }
 
-  async setResetToken(userId: string, token: string) {
-    return await this.userModel.findByIdAndUpdate(
-      userId,
-      { passwordResetToken: token, passwordResetExpires: new Date(Date.now() + 3600000) }, // 1 hour
-      { new: true }
-    ).exec();
-  }
-
-  async findByResetToken(token: string) {
-    return await this.userModel.findOne({ 
-      passwordResetToken: token,
-      passwordResetExpires: { $gt: new Date() }
-    }).exec();
-  }
-
-  async updatePassword(userId: string, newPassword: string) {
-    const hash = await bcrypt.hash(newPassword, 12);
-    return await this.userModel.findByIdAndUpdate(
-      userId,
-      { password: hash },
-      { new: true }
-    ).exec();
-  }
-
-  async clearResetToken(userId: string) {
-    return await this.userModel.findByIdAndUpdate(
-      userId,
-      { passwordResetToken: undefined, passwordResetExpires: undefined },
-      { new: true }
-    ).exec();
-  }
-
   async updateProfile(userId: string, updateData: { name?: string; phone?: string; profilePicture?: string }) {
     const user = await this.userModel.findByIdAndUpdate(
       userId,
