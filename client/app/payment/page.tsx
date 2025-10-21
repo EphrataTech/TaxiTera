@@ -163,8 +163,8 @@ export default function PaymentPage() {
     setProcessing(true);
     
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Quick payment processing
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       // Create booking with correct API format
       const booking = await api.post('/bookings', {

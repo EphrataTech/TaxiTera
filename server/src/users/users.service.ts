@@ -84,6 +84,41 @@ export class UsersService {
     ).exec();
   }
 
+  async setPasswordResetToken(userId: string, token: string, expires: Date) {
+    return await this.userModel.findByIdAndUpdate(
+      userId,
+      { 
+        passwordResetToken: token,
+        passwordResetExpires: expires
+      },
+      { new: true }
+    ).exec();
+  }
+
+  async findByPasswordResetToken(token: string) {
+    return await this.userModel.findOne({ passwordResetToken: token }).exec();
+  }
+
+  async updatePassword(userId: string, newPassword: string) {
+    const hash = await bcrypt.hash(newPassword, 12);
+    return await this.userModel.findByIdAndUpdate(
+      userId,
+      { password: hash },
+      { new: true }
+    ).exec();
+  }
+
+  async clearPasswordResetToken(userId: string) {
+    return await this.userModel.findByIdAndUpdate(
+      userId,
+      { 
+        passwordResetToken: undefined,
+        passwordResetExpires: undefined
+      },
+      { new: true }
+    ).exec();
+  }
+
   async setResetToken(userId: string, token: string) {
     return await this.userModel.findByIdAndUpdate(
       userId,

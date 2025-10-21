@@ -32,11 +32,20 @@ export class AuthController {
 
   @Get('verify-email')
   async verifyEmail(@Query('token') token: string) {
-    this.logger.log('Email verification endpoint called');
     if (!token) {
       throw new BadRequestException('Verification token is required');
     }
     return this.emailVerification.verifyEmail(token);
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body() body: { email: string }) {
+    return this.auth.forgotPassword(body.email);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() body: { token: string; newPassword: string }) {
+    return this.auth.resetPassword(body.token, body.newPassword);
   }
 
   @Post('forgot-password')
