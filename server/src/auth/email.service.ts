@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
 import * as nodemailer from 'nodemailer';
 import * as crypto from 'crypto';
 
@@ -8,16 +7,22 @@ export class EmailService {
   private readonly logger = new Logger(EmailService.name);
   private transporter;
 
-  constructor(private usersService: UsersService) {
-    this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
+  constructor() {
+    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      this.logger.warn('SMTP configuration missing. Email service will use fallback logging.');
+      this.transporter = null;
+    } else {
+      this.transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+      this.logger.log('Email service initialized with SMTP configuration');
+    }
   }
 
   async sendVerificationEmail(email: string, token: string): Promise<void> {
@@ -46,9 +51,14 @@ export class EmailService {
   async sendPasswordResetEmail(email: string, token: string): Promise<void> {
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
     
+    if (!this.transporter) {
+      this.logger.log(`[FALLBACK] Password reset link for ${email}: ${resetUrl}`);
+      return;
+    }
+    
     try {
       await this.transporter.sendMail({
-        from: `${process.env.EMAIL_FROM_NAME} <${process.env.SMTP_USER}>`,
+        from: `${process.env.EMAIL_FROM_NAME || 'TaxiTera'} <${process.env.SMTP_USER}>`,
         to: email,
         subject: 'Reset Your Password - TaxiTera',
         html: `
@@ -61,9 +71,9 @@ export class EmailService {
       });
       this.logger.log(`Password reset email sent to ${email}`);
     } catch (error) {
-      this.logger.error(`Failed to send reset email: ${error.message}`);
-      // Fallback to console logging
-      this.logger.log(`Reset link: ${resetUrl}`);
+      this.logger.error(`Failed to send reset email to ${email}: ${error.message}`);
+      this.logger.log(`[FALLBACK] Reset link: ${resetUrl}`);
+      throw error;
     }
   }
 

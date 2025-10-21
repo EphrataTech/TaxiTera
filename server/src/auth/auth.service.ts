@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException, ConflictException, Logger, BadReques
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { EmailVerificationService } from './email-verification.service';
+import { EmailService } from './email.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import * as crypto from 'crypto';
 
@@ -12,7 +13,8 @@ export class AuthService {
   constructor(
     private users: UsersService, 
     private jwt: JwtService,
-    private emailVerification: EmailVerificationService
+    private emailVerification: EmailVerificationService,
+    private emailService: EmailService
   ) {}
 
   async register(dto: RegisterDto) {
@@ -64,7 +66,13 @@ export class AuthService {
     const resetExpires = new Date(Date.now() + 3600000);
     
     await this.users.setPasswordResetToken(user.id, resetToken, resetExpires);
-    this.logger.log(`Password reset link for ${email}: ${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`);
+    
+    // Send actual email
+    try {
+      await this.emailService.sendPasswordResetEmail(email, resetToken);
+    } catch (error) {
+      this.logger.error(`Failed to send reset email: ${error.message}`);
+    }
     
     return { message: 'If email exists, reset link has been sent' };
   }

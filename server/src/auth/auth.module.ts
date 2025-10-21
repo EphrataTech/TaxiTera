@@ -7,6 +7,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
 import { RateLimitMiddleware } from '../common/middleware/rate-limit.middleware';
 import { EmailVerificationService } from './email-verification.service';
+import { EmailService } from './email.service';
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import { EmailVerificationService } from './email-verification.service';
       },
     }),
   ],
-  providers: [AuthService, JwtStrategy, RateLimitMiddleware, EmailVerificationService],
+  providers: [AuthService, JwtStrategy, RateLimitMiddleware, EmailVerificationService, EmailService],
   controllers: [AuthController]
 })
 export class AuthModule {
