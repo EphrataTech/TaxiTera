@@ -30,6 +30,7 @@ export default function DashboardPage() {
   const [updateBooking, setUpdateBooking] = useState<Booking | null>(null);
   const [updateData, setUpdateData] = useState({ date: '', time: '', additionalFee: 5 });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   useEffect(() => {
     if (hydrated && !isAuthenticated) {
@@ -148,7 +149,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex overflow-hidden">
       <div className="absolute inset-0 -z-10">
         <img src="/addisababa.png" alt="Addis Ababa" className="h-full w-full object-cover opacity-10" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/80 to-black/95" />
@@ -228,16 +229,116 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Mobile Menu Overlay */}
+      {showMobileMenu && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm">
+          <div className="w-80 bg-white/10 backdrop-blur-md border-r border-white/20 h-full flex flex-col">
+            <div className="p-6 border-b border-white/20 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
+                  <span className="text-black font-bold">T</span>
+                </div>
+                <div>
+                  <h2 className="text-white font-bold">TaxiTera</h2>
+                  <p className="text-white/60 text-sm">Dashboard</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowMobileMenu(false)}
+                className="text-white/70 hover:text-white p-2"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <nav className="flex-1 p-4">
+              <div className="space-y-2">
+                <button className="w-full flex items-center gap-3 px-4 py-3 text-white bg-amber-400/20 border border-amber-400/30 rounded-xl">
+                  <span>📊</span>
+                  <span>Overview</span>
+                </button>
+                <button 
+                  onClick={() => { router.push('/book'); setShowMobileMenu(false); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+                >
+                  <span>🚌</span>
+                  <span>Book Ride</span>
+                </button>
+                <button className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors">
+                  <span>📋</span>
+                  <span>My Bookings</span>
+                </button>
+                <button 
+                  onClick={() => { router.push('/profile'); setShowMobileMenu(false); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+                >
+                  <span>👤</span>
+                  <span>Profile</span>
+                </button>
+                <button 
+                  onClick={() => { router.push('/'); setShowMobileMenu(false); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+                >
+                  <span>🏠</span>
+                  <span>Home</span>
+                </button>
+              </div>
+            </nav>
+            
+            <div className="p-4 border-t border-white/20">
+              <div className="mb-4">
+                <p className="text-white/60 text-sm mb-2">Hi, {user?.name}!</p>
+                <div className="text-xs text-white/40">
+                  {bookings.length} bookings • ${totalSpent.toFixed(2)} spent
+                </div>
+              </div>
+              <div className="space-y-2">
+                <button 
+                  onClick={() => { setShowDeleteModal(true); setShowMobileMenu(false); }}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-red-300 hover:bg-red-500/20 rounded-xl transition-colors text-sm"
+                >
+                  <span>🗑️</span>
+                  <span>Delete Account</span>
+                </button>
+                <button 
+                  onClick={() => { logout(); setShowMobileMenu(false); }}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-gray-300 hover:bg-gray-500/20 rounded-xl transition-colors text-sm"
+                >
+                  <span>🚪</span>
+                  <span>Logout</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
-      <div className="flex-1 flex flex-col lg:flex-1">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
         <div className="bg-white/10 backdrop-blur-md border-b border-white/20">
           <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-3 sm:px-4 py-2 border border-white/20 shadow-lg mb-2">
-              <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
-              <span className="text-xs sm:text-sm font-medium text-white">Dashboard Overview</span>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-3 sm:px-4 py-2 border border-white/20 shadow-lg mb-2">
+                  <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
+                  <span className="text-xs sm:text-sm font-medium text-white">Dashboard Overview</span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-white">Welcome Back!</h1>
+              </div>
+              
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="lg:hidden bg-white/20 backdrop-blur-md border-2 border-white/40 text-white p-3 rounded-xl hover:bg-white/30 transition-all shadow-lg"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">Welcome Back!</h1>
           </div>
         </div>
 

@@ -2,8 +2,17 @@
 
 import { motion } from "framer-motion"
 import { Check } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export default function Pricing() {
+  const router = useRouter();
+  
+  const handleGetStarted = (planName: string) => {
+    // Store selected plan in localStorage for booking page
+    localStorage.setItem('selectedPlan', planName);
+    router.push('/book');
+  };
+  
   const plans = [
     {
       name: "Economy",
@@ -68,7 +77,8 @@ export default function Pricing() {
               <p className="text-muted-foreground mb-4">{plan.description}</p>
               <div className="text-3xl font-bold text-amber-400 mb-6">{plan.price}</div>
               <button
-                className={`w-full py-3 rounded-lg font-semibold transition-all mb-8 ${
+                onClick={() => handleGetStarted(plan.name)}
+                className={`w-full py-3 rounded-lg font-semibold transition-all mb-8 hover:scale-105 ${
                   plan.highlighted
                     ? "bg-gradient-to-r from-amber-400 to-orange-500 text-black hover:shadow-lg hover:shadow-amber-400/40"
                     : "bg-white/10 text-card-foreground border border-white/20 hover:bg-white/20"
