@@ -48,18 +48,6 @@ export class AuthController {
     return this.auth.resetPassword(body.token, body.newPassword);
   }
 
-  @Post('forgot-password')
-  forgotPassword(@Body() body: { email: string }) {
-    this.logger.log('Forgot password endpoint called');
-    return this.auth.forgotPassword(body.email);
-  }
-
-  @Post('reset-password')
-  resetPassword(@Body() body: { token: string; newPassword: string }) {
-    this.logger.log('Reset password endpoint called');
-    return this.auth.resetPassword(body.token, body.newPassword);
-  }
-
   @Get('test')
   test() {
     this.logger.log('Test endpoint called');

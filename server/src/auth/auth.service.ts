@@ -57,17 +57,14 @@ export class AuthService {
   async forgotPassword(email: string) {
     const user = await this.users.findByEmail(email);
     if (!user) {
-      // Don't reveal if email exists
       return { message: 'If email exists, reset link has been sent' };
     }
 
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetExpires = new Date(Date.now() + 3600000); // 1 hour
+    const resetExpires = new Date(Date.now() + 3600000);
     
     await this.users.setPasswordResetToken(user.id, resetToken, resetExpires);
-    
-    // Log reset link for development
-    this.logger.log(`Password reset link for ${email}: ${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`);
+    this.logger.log(`Password reset link for ${email}: ${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`);
     
     return { message: 'If email exists, reset link has been sent' };
   }
@@ -82,48 +79,6 @@ export class AuthService {
     await this.users.clearPasswordResetToken(user.id);
     
     return { message: 'Password reset successful' };
-  }
-
-
-
-  async forgotPassword(email: string) {
-    try {
-      this.logger.log(`Password reset request for: ${email}`);
-      
-      const user = await this.users.findByEmail(email);
-      if (!user) {
-        // Don't reveal if email exists or not
-        return { message: 'If the email exists, a reset link has been sent.' };
-      }
-      
-      const resetToken = this.emailVerification.generateVerificationToken();
-      await this.users.setResetToken(user.id, resetToken);
-      await this.emailVerification.sendPasswordResetEmail(email, resetToken);
-      
-      return { message: 'If the email exists, a reset link has been sent.' };
-    } catch (error) {
-      this.logger.error(`Password reset failed: ${error.message}`);
-      throw error;
-    }
-  }
-
-  async resetPassword(token: string, newPassword: string) {
-    try {
-      this.logger.log('Password reset attempt with token');
-      
-      const user = await this.users.findByResetToken(token);
-      if (!user) {
-        throw new BadRequestException('Invalid or expired reset token');
-      }
-      
-      await this.users.updatePassword(user.id, newPassword);
-      await this.users.clearResetToken(user.id);
-      
-      return { message: 'Password reset successful' };
-    } catch (error) {
-      this.logger.error(`Password reset failed: ${error.message}`);
-      throw error;
-    }
   }
 
   private issueToken(id: string, name: string, email: string) {
