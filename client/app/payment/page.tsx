@@ -163,9 +163,6 @@ export default function PaymentPage() {
     setProcessing(true);
     
     try {
-      // Quick payment processing
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
       // Create booking with correct API format
       const booking = await api.post('/bookings', {
         route: bookingData.route,
