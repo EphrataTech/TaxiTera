@@ -30,6 +30,13 @@ export class AuthService {
       const user = await this.users.createUser(dto.name, dto.email, dto.password, dto.phone);
       this.logger.log(`User created successfully: ${user.id}`);
       
+      // Send welcome email
+      try {
+        await this.emailService.sendWelcomeEmail(dto.email, dto.name);
+      } catch (error) {
+        this.logger.error(`Failed to send welcome email: ${error.message}`);
+      }
+      
       // Return token immediately for better UX
       return this.issueToken(user.id, user.name, user.email);
     } catch (error) {
