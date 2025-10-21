@@ -95,9 +95,9 @@ function Navigation() {
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-[9999] md:hidden">
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={closeMobileMenu}></div>
-          <div className="fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-gray-900/95 backdrop-blur-md border-l border-gray-700/50 shadow-2xl">
+          <div className="fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-gray-900 backdrop-blur-md border-l border-gray-700/50 shadow-2xl">
             <div className="flex items-center justify-between p-4 border-b border-gray-700/50">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
@@ -116,17 +116,17 @@ function Navigation() {
             </div>
             
             <nav className="p-4 space-y-2">
-              <Link href="/" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 text-white hover:bg-white/10 rounded-xl transition-colors">
+              <Link href="/" onClick={closeMobileMenu} className="flex items-center gap-3 p-4 text-white bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors">
                 <span>🏠</span>
-                <span>Home</span>
+                <span className="font-medium">Home</span>
               </Link>
-              <Link href="/about" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 text-white hover:bg-white/10 rounded-xl transition-colors">
+              <Link href="/about" onClick={closeMobileMenu} className="flex items-center gap-3 p-4 text-white bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors">
                 <span>ℹ️</span>
-                <span>About</span>
+                <span className="font-medium">About</span>
               </Link>
-              <Link href="/services" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 text-white hover:bg-white/10 rounded-xl transition-colors">
+              <Link href="/services" onClick={closeMobileMenu} className="flex items-center gap-3 p-4 text-white bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors">
                 <span>🚗</span>
-                <span>Services</span>
+                <span className="font-medium">Services</span>
               </Link>
               
               {isAuthenticated ? (
@@ -134,34 +134,33 @@ function Navigation() {
                   <div className="border-t border-gray-700/50 my-4 pt-4">
                     <div className="px-3 py-2 text-white/60 text-sm">Hi, {user?.name}!</div>
                   </div>
-                  <Link href="/dashboard" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 text-white hover:bg-white/10 rounded-xl transition-colors">
+                  <Link href="/dashboard" onClick={closeMobileMenu} className="flex items-center gap-3 p-4 text-white bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors">
                     <span>📊</span>
-                    <span>Dashboard</span>
+                    <span className="font-medium">Dashboard</span>
                   </Link>
-                  <Link href="/book" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 text-white hover:bg-white/10 rounded-xl transition-colors">
+                  <Link href="/book" onClick={closeMobileMenu} className="flex items-center gap-3 p-4 text-white bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors">
                     <span>🚌</span>
-                    <span>Book Ride</span>
+                    <span className="font-medium">Book Ride</span>
                   </Link>
-                  <Link href="/profile" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 text-white hover:bg-white/10 rounded-xl transition-colors">
+                  <Link href="/profile" onClick={closeMobileMenu} className="flex items-center gap-3 p-4 text-white bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors">
                     <span>👤</span>
-                    <span>Profile</span>
+                    <span className="font-medium">Profile</span>
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-3 p-3 w-full text-left text-red-300 hover:bg-red-500/10 rounded-xl transition-colors"
+                    className="flex items-center gap-3 p-4 w-full text-left text-red-300 bg-red-800 hover:bg-red-700 rounded-xl transition-colors"
                   >
                     <span>🚪</span>
-                    <span>Logout</span>
+                    <span className="font-medium">Logout</span>
                   </button>
                 </>
               ) : (
                 <>
-                  <div className="border-t border-gray-700/50 my-4 pt-4"></div>
-                  <Link href="/login" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 text-white hover:bg-white/10 rounded-xl transition-colors">
+                  <Link href="/login" onClick={closeMobileMenu} className="flex items-center gap-3 p-4 text-white bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors">
                     <span>🔑</span>
-                    <span>Sign In</span>
+                    <span className="font-medium">Sign In</span>
                   </Link>
-                  <Link href="/register" onClick={closeMobileMenu} className="flex items-center gap-3 p-3 bg-gradient-to-r from-amber-400 to-orange-500 text-black rounded-xl font-medium hover:scale-105 transition-all">
+                  <Link href="/register" onClick={closeMobileMenu} className="flex items-center gap-3 p-4 bg-gradient-to-r from-amber-400 to-orange-500 text-black rounded-xl font-bold hover:scale-105 transition-all shadow-lg">
                     <span>🚀</span>
                     <span>Get Started</span>
                   </Link>
@@ -182,9 +181,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/taxilogo.png" type="image/png" />
+        <link rel="shortcut icon" href="/taxilogo.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/taxilogo.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/taxilogo.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/taxilogo.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/taxilogo.png" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#f59e0b" />
+        <meta name="msapplication-TileColor" content="#f59e0b" />
+        <meta name="msapplication-TileImage" content="/taxilogo.png" />
+        <title>TaxiTera - Your Trusted Transportation Partner</title>
+        <meta name="description" content="Book reliable taxi rides in Addis Ababa with TaxiTera. Fast, secure, and affordable transportation service." />
+      </head>
       <body className={`${inter.variable} antialiased`}>
         <AuthProvider>
-          <header className="sticky top-0 z-40 bg-gray-900/95 backdrop-blur-md border-b border-gray-700/50">
+          <header className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-700/50">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
               <Link href="/" className="flex items-center space-x-2 hover:scale-105 transition-transform">
                 <div className="w-8 h-8 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">

@@ -39,32 +39,20 @@ export default function RegisterPage() {
     setError(null);
     setSuccess(null);
     
-    console.log('Starting registration with:', { name, email, phone });
-    
     try {
       const res = await api.register({ name, email, password, phone }) as any;
-      console.log('Registration response:', res);
       
-      // Handle different response structures
       const token = res.access_token || res.data?.access_token || res.accessToken || res.token;
       const user = res.user || res.data?.user || res.userData;
       
-      console.log('Extracted token:', token);
-      console.log('Extracted user:', user);
-      
       if (token && user) {
         setSession(token, user);
-        console.log('Session set successfully, redirecting...');
         router.replace("/dashboard");
       } else {
-        console.error('Missing token or user data in response:', { token, user });
         setSuccess('Account created successfully! Please log in to continue.');
-        setTimeout(() => {
-          router.push('/login');
-        }, 2000);
+        setTimeout(() => router.push('/login'), 2000);
       }
     } catch (err: any) {
-      console.error('Registration error:', err);
       
       // Handle specific error cases
       if (err.status === 409 || err.message?.includes('already exists')) {

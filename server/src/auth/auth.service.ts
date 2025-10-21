@@ -18,31 +18,17 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
-    try {
-      this.logger.log(`Registration attempt for email: ${dto.email}`);
-      
-      const existing = await this.users.findByEmail(dto.email);
-      if (existing) {
-        this.logger.warn(`Email already exists: ${dto.email}`);
-        throw new ConflictException('Email already in use');
-      }
-      
-      const user = await this.users.createUser(dto.name, dto.email, dto.password, dto.phone);
-      this.logger.log(`User created successfully: ${user.id}`);
-      
-      // Send welcome email
-      try {
-        await this.emailService.sendWelcomeEmail(dto.email, dto.name);
-      } catch (error) {
-        this.logger.error(`Failed to send welcome email: ${error.message}`);
-      }
-      
-      // Return token immediately for better UX
-      return this.issueToken(user.id, user.name, user.email);
-    } catch (error) {
-      this.logger.error(`Registration failed: ${error.message}`, error.stack);
-      throw error;
+    const existing = await this.users.findByEmail(dto.email);
+    if (existing) {
+      throw new ConflictException('Email already in use');
     }
+    
+    const user = await this.users.createUser(dto.name, dto.email, dto.password, dto.phone);
+    
+    // Send welcome email asynchronously (don't wait)
+    this.emailService.sendWelcomeEmail(dto.email, dto.name).catch(() => {});
+    
+    return this.issueToken(user.id, user.name, user.email);
   }
 
   async login(dto: LoginDto) {
