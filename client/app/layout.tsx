@@ -1,5 +1,3 @@
-"use client";
-
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Link from "next/link";
@@ -174,6 +172,22 @@ function Navigation() {
   );
 }
 
+export const metadata: Metadata = {
+  title: 'TaxiTera - Your Trusted Transportation Partner',
+  description: 'Book reliable taxi rides in Addis Ababa with TaxiTera. Fast, secure, and affordable transportation service.',
+  icons: {
+    icon: '/taxilogo.png',
+    shortcut: '/taxilogo.png',
+    apple: '/taxilogo.png',
+  },
+  manifest: '/manifest.json',
+  themeColor: '#f59e0b',
+  other: {
+    'msapplication-TileColor': '#f59e0b',
+    'msapplication-TileImage': '/taxilogo.png',
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -181,20 +195,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/taxilogo.png" type="image/png" />
-        <link rel="shortcut icon" href="/taxilogo.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/taxilogo.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/taxilogo.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/taxilogo.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/taxilogo.png" />
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#f59e0b" />
-        <meta name="msapplication-TileColor" content="#f59e0b" />
-        <meta name="msapplication-TileImage" content="/taxilogo.png" />
-        <title>TaxiTera - Your Trusted Transportation Partner</title>
-        <meta name="description" content="Book reliable taxi rides in Addis Ababa with TaxiTera. Fast, secure, and affordable transportation service." />
-      </head>
       <body className={`${inter.variable} antialiased`}>
         <AuthProvider>
           <header className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-700/50">
